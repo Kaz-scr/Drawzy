@@ -141,11 +141,15 @@
         }).join('');
     }
 
-    // Copy room code
+    // Copy invite link (button tooltip says "Copy link")
     document.getElementById('copyCodeBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(roomCode).then(() => {
-            const btn = document.getElementById('copyCodeBtn');
+        const btn = document.getElementById('copyCodeBtn');
+        const link = `${window.location.origin}/game?room=${roomCode}`;
+        navigator.clipboard.writeText(link).then(() => {
             btn.textContent = '✅';
+            setTimeout(() => { btn.textContent = '📋'; }, 2000);
+        }).catch(() => {
+            btn.textContent = '❌';
             setTimeout(() => { btn.textContent = '📋'; }, 2000);
         });
     });
@@ -274,6 +278,10 @@
 
         socket.on('error', (data) => {
             alert(data.message);
+            // Errors like "Room not found" leave nothing to show — go home
+            if (data.fatal) {
+                window.location.href = '/';
+            }
         });
 
         // ---- GAME EVENTS ----
@@ -287,6 +295,8 @@
 
                 isDrawing = data.drawerId === myId;
                 maxTime = drawTime;
+                setWordLabel('');
+                closeToolPopups();
 
                 document.getElementById('roundInfo').textContent = `Round ${data.round} / ${data.totalRounds}`;
                 updatePlayersList(data.players);
@@ -339,7 +349,7 @@
                 document.getElementById('pickingOverlay').classList.add('hidden');
 
                 isDrawing = data.drawerId === myId;
-                maxTime = data.timeLeft;
+                maxTime = data.totalTime || data.timeLeft;
 
                 document.getElementById('roundInfo').textContent = `Round ${data.round} / ${data.totalRounds}`;
                 updatePlayersList(data.players);
@@ -347,10 +357,12 @@
                 if (isDrawing) {
                     document.getElementById('toolbar').classList.remove('hidden');
                     canvas.style.cursor = '';
+                    setWordLabel('DRAW THIS');
                 } else {
                     document.getElementById('toolbar').classList.add('hidden');
                     canvas.style.cursor = 'default';
                     document.getElementById('wordHint').textContent = data.hint;
+                    setWordLabel('GUESS THIS');
                     document.getElementById('chatInput').focus();
                 }
 
@@ -369,6 +381,12 @@
         socket.on('wordChoices', (words) => {
             const overlay = document.getElementById('wordPickerOverlay');
             const container = document.getElementById('wordChoices');
+
+            // Empty list means "close the picker" (e.g. word was auto-picked)
+            if (!Array.isArray(words) || words.length === 0) {
+                overlay.classList.add('hidden');
+                return;
+            }
             overlay.classList.remove('hidden');
 
             container.innerHTML = words.map(w => `
@@ -385,6 +403,7 @@
 
         socket.on('currentWord', (word) => {
             document.getElementById('wordHint').textContent = word;
+            setWordLabel('DRAW THIS');
         });
 
         socket.on('hint', (data) => {
@@ -435,8 +454,15 @@
             document.getElementById('revealedWord').textContent = data.word;
             document.getElementById('turnEndOverlay').classList.remove('hidden');
             document.getElementById('toolbar').classList.add('hidden');
+            setWordLabel('');
+            closeToolPopups();
             isDrawing = false;
             updatePlayersList(data.players);
+
+            // Re-enable chat during the intermission (guessers had it locked)
+            const chatInput = document.getElementById('chatInput');
+            chatInput.disabled = false;
+            chatInput.placeholder = 'Type your guess here...';
 
             addChatMessage({
                 type: 'system',
@@ -493,8 +519,15 @@
         // ---- DRAWING SYNC ----
         let remoteStroke = []; // track current incoming stroke for undo support
 
-        socket.on('draw', (data) => {
-            if (isDrawing) return;
+        // Flush remote stroke when turn ends or undo happens
+        function flushRemoteStroke() {
+            if (remoteStroke.length > 0) {
+                strokeHistory.push([...remoteStroke]);
+                remoteStroke = [];
+            }
+        }
+
+        function onRemoteDraw(data) {
             handleRemoteDraw(data);
 
             if (data.type === 'start') {
@@ -506,34 +539,54 @@
             } else {
                 remoteStroke.push(data);
             }
-        });
-
-        // Flush remote stroke when turn ends or undo happens
-        function flushRemoteStroke() {
-            if (remoteStroke.length > 0) {
-                strokeHistory.push([...remoteStroke]);
-                remoteStroke = [];
-            }
         }
 
-        socket.on('clearCanvas', () => {
+        function onRemoteClear() {
             flushRemoteStroke();
             clearCanvas();
             strokeHistory = [];
             remoteStroke = [];
-        });
+        }
 
-        socket.on('undoStroke', () => {
+        function onRemoteUndo() {
             flushRemoteStroke();
             undoLastStroke(false);
-        });
+        }
 
-        socket.on('fill', (data) => {
-            if (isDrawing) return;
+        function onRemoteFill(data) {
             flushRemoteStroke();
             // Store fill as its own "stroke" so undo works
             strokeHistory.push([{ type: 'fill', x: data.x, y: data.y, color: data.color }]);
             floodFillAt(data.x, data.y, data.color);
+        }
+
+        socket.on('draw', (data) => {
+            if (isDrawing) return;
+            onRemoteDraw(data);
+        });
+
+        socket.on('clearCanvas', onRemoteClear);
+
+        socket.on('undoStroke', onRemoteUndo);
+
+        socket.on('fill', (data) => {
+            if (isDrawing) return;
+            onRemoteFill(data);
+        });
+
+        // Replay of everything drawn so far (sent when joining mid-turn)
+        socket.on('canvasState', (events) => {
+            if (!Array.isArray(events)) return;
+            clearCanvas();
+            strokeHistory = [];
+            remoteStroke = [];
+            events.forEach(ev => {
+                if (!ev) return;
+                if (ev.event === 'draw') onRemoteDraw(ev.data);
+                else if (ev.event === 'fill') onRemoteFill(ev.data);
+                else if (ev.event === 'undo') onRemoteUndo();
+                else if (ev.event === 'clear') onRemoteClear();
+            });
         });
 
         // ---- CHAT ----
@@ -547,6 +600,9 @@
         if (!container) return;
 
         container.innerHTML = players.map(p => {
+            // Tied scores share a rank, like skribbl
+            const rank = 1 + players.filter(o => o.score > p.score).length;
+
             let statusIcon = '';
             if (p.isDrawing) statusIcon = '🖊️';
             else if (p.guessedCorrectly) statusIcon = '✅';
@@ -558,21 +614,45 @@
             const inner = p.avatar.customImage
                 ? `<img class="custom-av" src="${p.avatar.customImage}" alt="avatar">`
                 : p.avatar.emoji;
+            const youTag = p.id === myId ? ' <span class="you-tag">(You)</span>' : '';
 
             return `
         <div class="${classes}">
+          <span class="player-rank">#${rank}</span>
+          <div class="player-info">
+            <div class="player-name">${escapeHtml(p.name)}${youTag}</div>
+            <div class="player-score">${p.score} points</div>
+          </div>
+          <span class="player-status">${statusIcon}</span>
           <div class="player-avatar" style="background:linear-gradient(135deg, ${p.avatar.color}, ${adjustColor(p.avatar.color, -30)})">
             ${inner}
           </div>
-          <div class="player-info">
-            <div class="player-name">${escapeHtml(p.name)}</div>
-            <div class="player-score">${p.score} pts</div>
-          </div>
-          <span class="player-status">${statusIcon}</span>
         </div>
       `;
         }).join('');
     }
+
+    function setWordLabel(text) {
+        const el = document.getElementById('wordLabel');
+        if (el) el.textContent = text;
+    }
+
+    // On mobile the guess input sits directly under the canvas (skribbl-style);
+    // on desktop it lives at the bottom of the chat sidebar.
+    const mobileLayout = window.matchMedia('(max-width: 768px)');
+    function placeChatInput() {
+        const inputWrapper = document.querySelector('.chat-input-wrapper');
+        if (!inputWrapper) return;
+        if (mobileLayout.matches) {
+            document.querySelector('.canvas-area').insertBefore(inputWrapper, document.getElementById('toolbar'));
+        } else {
+            document.querySelector('.chat-sidebar').appendChild(inputWrapper);
+        }
+    }
+    if (mobileLayout.addEventListener) {
+        mobileLayout.addEventListener('change', placeChatInput);
+    }
+    window.addEventListener('resize', placeChatInput);
 
     // ============ CANVAS / DRAWING ============
     function getCanvasCoords(e) {
@@ -783,24 +863,52 @@
     }
 
     // ============ TOOLBAR ============
+    function closeToolPopups() {
+        document.getElementById('toolbar').classList.remove('palette-open');
+        document.getElementById('sizePopup').classList.add('hidden');
+    }
+
     function setupToolbarListeners() {
+        const toolbar = document.getElementById('toolbar');
+        const colorPreview = document.getElementById('colorPreview');
+        const sizePopup = document.getElementById('sizePopup');
+        const sizeDot = document.getElementById('sizeDot');
+
+        // Current color swatch: toggles the palette panel on mobile
+        colorPreview.addEventListener('click', () => {
+            sizePopup.classList.add('hidden');
+            toolbar.classList.toggle('palette-open');
+        });
+
         // Color palette
         document.querySelectorAll('.palette-color').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.palette-color').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentColor = btn.dataset.color;
+                colorPreview.style.background = currentColor;
+                toolbar.classList.remove('palette-open');
                 // Auto-switch to brush when picking color
                 if (currentTool === 'eraser') setTool('brush');
             });
         });
 
-        // Size buttons
-        document.querySelectorAll('.size-btn').forEach(btn => {
+        // Size button opens the size popup
+        document.getElementById('sizeBtn').addEventListener('click', () => {
+            toolbar.classList.remove('palette-open');
+            sizePopup.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.size-option').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentSize = parseInt(btn.dataset.size);
+                // Mirror the chosen dot on the main size button (capped for display)
+                const px = Math.min(26, Math.max(4, currentSize + 4));
+                sizeDot.style.width = px + 'px';
+                sizeDot.style.height = px + 'px';
+                sizePopup.classList.add('hidden');
             });
         });
 
@@ -913,5 +1021,6 @@
     // ============ INIT ============
     // Initialize canvas with white
     clearCanvas();
+    placeChatInput();
     init();
 })();

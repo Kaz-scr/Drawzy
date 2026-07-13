@@ -80,14 +80,6 @@
         <!-- Header -->
         <div class="game-header">
             <div class="header-left">
-                <span class="round-info" id="roundInfo">Round 1 / 3</span>
-            </div>
-            <div class="header-center">
-                <div class="word-display">
-                    <span class="word-hint" id="wordHint">_ _ _ _ _</span>
-                </div>
-            </div>
-            <div class="header-right">
                 <div class="timer-circle" id="timerCircle">
                     <svg viewBox="0 0 44 44">
                         <circle class="timer-bg" cx="22" cy="22" r="20"></circle>
@@ -95,7 +87,16 @@
                     </svg>
                     <span class="timer-text" id="timerText"></span>
                 </div>
-                <button class="tool-btn tool-danger" id="btnLeaveGame" title="Leave Game" style="margin-left:8px;">
+                <span class="round-info" id="roundInfo">Round 1 / 3</span>
+            </div>
+            <div class="header-center">
+                <div class="word-display">
+                    <span class="word-label" id="wordLabel"></span>
+                    <span class="word-hint" id="wordHint">_ _ _ _ _</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="tool-btn tool-danger" id="btnLeaveGame" title="Leave Game">
                     <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
                 </button>
             </div>
@@ -111,7 +112,7 @@
             <!-- Center: Canvas -->
             <div class="canvas-area">
                 <div class="canvas-wrapper" id="canvasWrapper">
-                    <canvas id="drawCanvas" width="960" height="720"></canvas>
+                    <canvas id="drawCanvas" width="800" height="600"></canvas>
                     <!-- Turn end overlay -->
                     <div class="canvas-overlay hidden" id="turnEndOverlay">
                         <div class="turn-end-content">
@@ -131,54 +132,97 @@
 
                 <!-- Drawing Toolbar -->
                 <div class="toolbar hidden" id="toolbar">
-                    <div class="tool-group colors-group">
-                        <div class="color-palette">
-                            <button class="palette-color active" data-color="#000000"
-                                style="background:#000000"></button>
-                            <button class="palette-color" data-color="#808080" style="background:#808080"></button>
-                            <button class="palette-color" data-color="#401010" style="background:#401010"></button>
-                            <button class="palette-color" data-color="#FF0000" style="background:#FF0000"></button>
-                            <button class="palette-color" data-color="#FF6600" style="background:#FF6600"></button>
-                            <button class="palette-color" data-color="#FFD700" style="background:#FFD700"></button>
-                            <button class="palette-color" data-color="#00CC00" style="background:#00CC00"></button>
-                            <button class="palette-color" data-color="#00CCCC" style="background:#00CCCC"></button>
-                            <button class="palette-color" data-color="#0066FF" style="background:#0066FF"></button>
-                            <button class="palette-color" data-color="#6600CC" style="background:#6600CC"></button>
-                            <button class="palette-color" data-color="#CC00CC" style="background:#CC00CC"></button>
-                            <button class="palette-color" data-color="#FFFFFF"
-                                style="background:#FFFFFF; border-color:#aaa"></button>
-                            <button class="palette-color" data-color="#C0C0C0" style="background:#C0C0C0"></button>
-                            <button class="palette-color" data-color="#804000" style="background:#804000"></button>
-                            <button class="palette-color" data-color="#FF6666" style="background:#FF6666"></button>
-                            <button class="palette-color" data-color="#FF9933" style="background:#FF9933"></button>
-                            <button class="palette-color" data-color="#FFFF66" style="background:#FFFF66"></button>
-                            <button class="palette-color" data-color="#66FF66" style="background:#66FF66"></button>
-                            <button class="palette-color" data-color="#66FFFF" style="background:#66FFFF"></button>
-                            <button class="palette-color" data-color="#6699FF" style="background:#6699FF"></button>
-                            <button class="palette-color" data-color="#9966FF" style="background:#9966FF"></button>
-                            <button class="palette-color" data-color="#FF66FF" style="background:#FF66FF"></button>
+                    <button class="color-preview" id="colorPreview" title="Colors"
+                        style="background:#000000"></button>
+                    <div class="size-picker">
+                        <button class="tool-btn size-btn-main" id="sizeBtn" title="Brush size">
+                            <span class="size-dot" id="sizeDot" style="width:8px;height:8px"></span>
+                        </button>
+                        <div class="size-popup hidden" id="sizePopup">
+                            <button class="size-option" data-size="2"><span class="size-dot"
+                                    style="width:4px;height:4px"></span></button>
+                            <button class="size-option active" data-size="5"><span class="size-dot"
+                                    style="width:8px;height:8px"></span></button>
+                            <button class="size-option" data-size="10"><span class="size-dot"
+                                    style="width:14px;height:14px"></span></button>
+                            <button class="size-option" data-size="20"><span class="size-dot"
+                                    style="width:20px;height:20px"></span></button>
+                            <button class="size-option" data-size="32"><span class="size-dot"
+                                    style="width:26px;height:26px"></span></button>
                         </div>
                     </div>
-                    <div class="tool-group tools-group">
-                        <div class="tool-row">
-                            <button class="tool-btn active" id="toolBrush" title="Brush">🖌️</button>
-                            <button class="tool-btn" id="toolEraser" title="Eraser">◻️</button>
-                            <button class="tool-btn" id="toolFill" title="Fill">🪣</button>
-                        </div>
-                        <div class="tool-row">
-                            <button class="size-btn" data-size="2"><span class="size-dot"
-                                    style="width:4px;height:4px"></span></button>
-                            <button class="size-btn active" data-size="5"><span class="size-dot"
-                                    style="width:8px;height:8px"></span></button>
-                            <button class="size-btn" data-size="10"><span class="size-dot"
-                                    style="width:12px;height:12px"></span></button>
-                            <button class="size-btn" data-size="20"><span class="size-dot"
-                                    style="width:16px;height:16px"></span></button>
-                        </div>
-                        <div class="tool-row">
-                            <button class="tool-btn" id="toolUndo" title="Undo">↩️</button>
-                            <button class="tool-btn tool-danger" id="toolClear" title="Clear">🗑️</button>
-                        </div>
+                    <div class="color-palette" id="colorPalette">
+                        <button class="palette-color" data-color="#FFFFFF" style="background:#FFFFFF"
+                            title="White"></button>
+                        <button class="palette-color" data-color="#C1C1C1" style="background:#C1C1C1"
+                            title="Light Gray"></button>
+                        <button class="palette-color" data-color="#EF130B" style="background:#EF130B"
+                            title="Red"></button>
+                        <button class="palette-color" data-color="#FF7100" style="background:#FF7100"
+                            title="Orange"></button>
+                        <button class="palette-color" data-color="#FFE400" style="background:#FFE400"
+                            title="Yellow"></button>
+                        <button class="palette-color" data-color="#00CC00" style="background:#00CC00"
+                            title="Green"></button>
+                        <button class="palette-color" data-color="#00FF91" style="background:#00FF91"
+                            title="Mint"></button>
+                        <button class="palette-color" data-color="#00B2FF" style="background:#00B2FF"
+                            title="Sky Blue"></button>
+                        <button class="palette-color" data-color="#231FD3" style="background:#231FD3"
+                            title="Sea Blue"></button>
+                        <button class="palette-color" data-color="#A300BA" style="background:#A300BA"
+                            title="Purple"></button>
+                        <button class="palette-color" data-color="#DF69A7" style="background:#DF69A7"
+                            title="Pink"></button>
+                        <button class="palette-color" data-color="#FFAC8E" style="background:#FFAC8E"
+                            title="Beige"></button>
+                        <button class="palette-color" data-color="#A0522D" style="background:#A0522D"
+                            title="Brown"></button>
+                        <button class="palette-color active" data-color="#000000" style="background:#000000"
+                            title="Black"></button>
+                        <button class="palette-color" data-color="#505050" style="background:#505050"
+                            title="Gray"></button>
+                        <button class="palette-color" data-color="#740B07" style="background:#740B07"
+                            title="Dark Red"></button>
+                        <button class="palette-color" data-color="#C23800" style="background:#C23800"
+                            title="Dark Orange"></button>
+                        <button class="palette-color" data-color="#E8A200" style="background:#E8A200"
+                            title="Dark Yellow"></button>
+                        <button class="palette-color" data-color="#005510" style="background:#005510"
+                            title="Dark Green"></button>
+                        <button class="palette-color" data-color="#00785D" style="background:#00785D"
+                            title="Dark Mint"></button>
+                        <button class="palette-color" data-color="#00569E" style="background:#00569E"
+                            title="Dark Sky Blue"></button>
+                        <button class="palette-color" data-color="#0E0865" style="background:#0E0865"
+                            title="Dark Sea Blue"></button>
+                        <button class="palette-color" data-color="#550069" style="background:#550069"
+                            title="Dark Purple"></button>
+                        <button class="palette-color" data-color="#873554" style="background:#873554"
+                            title="Dark Pink"></button>
+                        <button class="palette-color" data-color="#CC774D" style="background:#CC774D"
+                            title="Dark Beige"></button>
+                        <button class="palette-color" data-color="#63300D" style="background:#63300D"
+                            title="Dark Brown"></button>
+                    </div>
+                    <div class="tool-row main-tools">
+                        <button class="tool-btn active" id="toolBrush" title="Brush">
+                            <span class="material-symbols-outlined">brush</span>
+                        </button>
+                        <button class="tool-btn" id="toolEraser" title="Eraser">
+                            <span class="material-symbols-outlined">ink_eraser</span>
+                        </button>
+                        <button class="tool-btn" id="toolFill" title="Fill">
+                            <span class="material-symbols-outlined">format_color_fill</span>
+                        </button>
+                    </div>
+                    <div class="tool-row">
+                        <button class="tool-btn" id="toolUndo" title="Undo">
+                            <span class="material-symbols-outlined">undo</span>
+                        </button>
+                        <button class="tool-btn tool-danger" id="toolClear" title="Clear">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
                     </div>
                 </div>
             </div>

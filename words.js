@@ -10,7 +10,7 @@ const words = {
         'queen', 'eye', 'ear', 'leaf', 'bone', 'kite', 'nest', 'frog', 'duck', 'bear',
         'lion', 'pig', 'cow', 'hen', 'ant', 'bee', 'web', 'box', 'bag', 'pen',
         'ice', 'map', 'fan', 'pot', 'jar', 'rug', 'bat', 'owl', 'fox', 'gem',
-        'bus', 'van', 'cap', 'bow', 'axe', 'net', 'pin', 'saw', 'toy', 'log'
+        'van', 'cap', 'bow', 'axe', 'net', 'pin', 'saw', 'toy', 'log'
     ],
     medium: [
         'guitar', 'banana', 'rocket', 'dragon', 'castle', 'pirate', 'zombie', 'bridge',
@@ -45,7 +45,7 @@ const words = {
         'lawnmower', 'lighthouse', 'lollipop', 'marionette', 'marshmallow', 'microscope',
         'moonlight', 'mosquito', 'motorcycle', 'nightmare', 'observatory', 'origami',
         'parachute', 'pineapple', 'platypus', 'porcupine', 'quicksand', 'rattlesnake',
-        'recycling', 'reflection', 'rhinoceros', 'rollercoaster', 'saxophone', 'scarecrow',
+        'recycling', 'reflection', 'rhinoceros', 'rollercoaster', 'saxophone',
         'scoreboard', 'skyscraper', 'sleepwalking', 'snowflake', 'spaceship', 'spaghetti',
         'spotlight', 'staircase', 'steamroller', 'stopwatch', 'strawberry', 'submarine',
         'sunflower', 'swordfish', 'telescope', 'thumbtack', 'trampoline', 'treehouse',

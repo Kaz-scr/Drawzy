@@ -109,46 +109,63 @@
         </div>
         <div class="avatar-canvas-container">
           <div class="pixel-border-chunky avatar-canvas-frame">
-            <canvas id="avatarCanvas" width="96" height="96"></canvas>
+            <canvas id="avatarCanvas" width="512" height="512"></canvas>
           </div>
         </div>
         <div class="avatar-toolbar">
           <div class="avatar-palette">
-            <button class="color-swatch active" data-color="#000000" style="background:#000000"></button>
-            <button class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF"></button>
-            <button class="color-swatch" data-color="#FFB085" style="background:#FFB085"></button>
-            <button class="color-swatch" data-color="#F2789F" style="background:#F2789F"></button>
-            <button class="color-swatch" data-color="#8D8078" style="background:#8D8078"></button>
-            <button class="color-swatch" data-color="#4A403A" style="background:#4A403A"></button>
-            <button class="color-swatch" data-color="#FF0000" style="background:#FF0000"></button>
-            <button class="color-swatch" data-color="#00FF00" style="background:#00FF00"></button>
-            <button class="color-swatch" data-color="#0000FF" style="background:#0000FF"></button>
+            <button class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF" title="White"></button>
+            <button class="color-swatch" data-color="#C1C1C1" style="background:#C1C1C1" title="Light Gray"></button>
+            <button class="color-swatch" data-color="#EF130B" style="background:#EF130B" title="Red"></button>
+            <button class="color-swatch" data-color="#FF7100" style="background:#FF7100" title="Orange"></button>
+            <button class="color-swatch" data-color="#FFE400" style="background:#FFE400" title="Yellow"></button>
+            <button class="color-swatch" data-color="#00CC00" style="background:#00CC00" title="Green"></button>
+            <button class="color-swatch" data-color="#00FF91" style="background:#00FF91" title="Mint"></button>
+            <button class="color-swatch" data-color="#00B2FF" style="background:#00B2FF" title="Sky Blue"></button>
+            <button class="color-swatch" data-color="#231FD3" style="background:#231FD3" title="Sea Blue"></button>
+            <button class="color-swatch" data-color="#A300BA" style="background:#A300BA" title="Purple"></button>
+            <button class="color-swatch" data-color="#DF69A7" style="background:#DF69A7" title="Pink"></button>
+            <button class="color-swatch" data-color="#FFAC8E" style="background:#FFAC8E" title="Beige"></button>
+            <button class="color-swatch" data-color="#A0522D" style="background:#A0522D" title="Brown"></button>
+            <button class="color-swatch active" data-color="#000000" style="background:#000000" title="Black"></button>
+            <button class="color-swatch" data-color="#505050" style="background:#505050" title="Gray"></button>
+            <button class="color-swatch" data-color="#740B07" style="background:#740B07" title="Dark Red"></button>
+            <button class="color-swatch" data-color="#C23800" style="background:#C23800" title="Dark Orange"></button>
+            <button class="color-swatch" data-color="#E8A200" style="background:#E8A200" title="Dark Yellow"></button>
+            <button class="color-swatch" data-color="#005510" style="background:#005510" title="Dark Green"></button>
+            <button class="color-swatch" data-color="#00785D" style="background:#00785D" title="Dark Mint"></button>
+            <button class="color-swatch" data-color="#00569E" style="background:#00569E" title="Dark Sky Blue"></button>
+            <button class="color-swatch" data-color="#0E0865" style="background:#0E0865" title="Dark Sea Blue"></button>
+            <button class="color-swatch" data-color="#550069" style="background:#550069" title="Dark Purple"></button>
+            <button class="color-swatch" data-color="#873554" style="background:#873554" title="Dark Pink"></button>
+            <button class="color-swatch" data-color="#CC774D" style="background:#CC774D" title="Dark Beige"></button>
+            <button class="color-swatch" data-color="#63300D" style="background:#63300D" title="Dark Brown"></button>
           </div>
           <div class="avatar-tools-row">
-            <button class="pixel-button pixel-button-grey" id="avBrush">
+            <button class="av-tool active" id="avBrush" title="Brush">
               <span class="material-symbols-outlined">brush</span>
             </button>
-            <button class="pixel-button pixel-button-grey" id="avEraser">
+            <button class="av-tool" id="avEraser" title="Eraser">
               <span class="material-symbols-outlined">ink_eraser</span>
             </button>
-            <button class="pixel-button pixel-button-grey" id="avFill">
-              <span class="material-symbols-outlined">colors</span>
+            <button class="av-tool" id="avFill" title="Fill">
+              <span class="material-symbols-outlined">format_color_fill</span>
             </button>
-            <button class="pixel-button pixel-button-grey" id="avUndo">
+            <button class="av-tool" id="avUndo" title="Undo">
               <span class="material-symbols-outlined">undo</span>
             </button>
-            <button class="pixel-button pixel-button-grey" id="avClear">
+            <button class="av-tool av-danger" id="avClear" title="Clear">
               <span class="material-symbols-outlined">delete</span>
             </button>
           </div>
           <div class="avatar-tools-row">
-            <button class="av-size active" data-size="1"><span class="av-size-dot"
-                style="width:4px;height:4px"></span></button>
-            <button class="av-size" data-size="2"><span class="av-size-dot"
-                style="width:6px;height:6px"></span></button>
             <button class="av-size" data-size="4"><span class="av-size-dot"
+                style="width:4px;height:4px"></span></button>
+            <button class="av-size active" data-size="8"><span class="av-size-dot"
+                style="width:6px;height:6px"></span></button>
+            <button class="av-size" data-size="16"><span class="av-size-dot"
                 style="width:10px;height:10px"></span></button>
-            <button class="av-size" data-size="6"><span class="av-size-dot"
+            <button class="av-size" data-size="28"><span class="av-size-dot"
                 style="width:14px;height:14px"></span></button>
           </div>
           <div class="avatar-modal-actions">
@@ -295,13 +312,15 @@
     const avCtx = avCanvas.getContext('2d');
     let avDrawing = false;
     let avColor = '#000000';
-    let avSize = 1;
+    let avSize = 8;
     let avTool = 'brush'; // brush | eraser | fill
     let avLastX = 0, avLastY = 0;
     let avHistory = []; // canvas snapshots for undo
 
     function avSaveSnapshot() {
       avHistory.push(avCtx.getImageData(0, 0, avCanvas.width, avCanvas.height));
+      // Snapshots are ~1MB at 512x512 — keep memory bounded
+      if (avHistory.length > 30) avHistory.shift();
     }
 
     function avClear() {
@@ -313,7 +332,19 @@
     // Open modal
     document.getElementById('btnDrawAvatar').addEventListener('click', () => {
       document.getElementById('avatarModalOverlay').classList.remove('hidden');
-      if (!customAvatarData) avClear();
+      if (customAvatarData) {
+        // Load the saved avatar so editing (or saving) doesn't wipe it
+        const img = new Image();
+        img.onload = () => {
+          avClear();
+          // Keep older low-res avatars crisp when upscaled onto the bigger canvas
+          avCtx.imageSmoothingEnabled = false;
+          avCtx.drawImage(img, 0, 0, avCanvas.width, avCanvas.height);
+        };
+        img.src = customAvatarData;
+      } else {
+        avClear();
+      }
     });
 
     // Close modal
